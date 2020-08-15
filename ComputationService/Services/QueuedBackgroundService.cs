@@ -58,19 +58,24 @@ namespace ComputationService.Services
 				JobQueueItem jobQueueItem = null;
 				try
 				{
+					// wait for the queue to signal there is something that needs to be done
 					await _signal.WaitAsync(stoppingToken).ConfigureAwait(false);
 
+					// dequeue the item
 					jobQueueItem = _queue.TryDequeue(out var workItem) ? workItem : null;
 
 					if(jobQueueItem != null)
 					{
+						// put the job in to a "processing" state
 						await _jobStatusService.UpdateJobStatusAsync(
 							jobQueueItem.JobId, JobStatus.Processing).ConfigureAwait(false);
 
+						// the heavy lifting is done here...
 						var result = await _workService.DoWorkAsync(
 							jobQueueItem.JobId, jobQueueItem.JobParameters,
 							stoppingToken).ConfigureAwait(false);
 
+						// store the result of the work and set the status to "finished"
 						await _jobStatusService.StoreJobResultAsync(
 							jobQueueItem.JobId, result, JobStatus.Success).ConfigureAwait(false);
 					}
@@ -83,6 +88,7 @@ namespace ComputationService.Services
 				{
 					try
 					{
+						// something went wrong. Put the job in to an errored state and continue on
 						await _jobStatusService.StoreJobResultAsync(jobQueueItem.JobId, new JobResultModel
 						{
 							Exception = new JobExceptionModel(ex)
