@@ -25,7 +25,8 @@ namespace ComputationService.Controllers
 		[ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(JobCreatedModel))]
 		public async Task<IActionResult> BeginComputation([FromBody] JobParametersModel obj)
 		{
-			return Accepted(await _queuedBackgroundService.PostWorkItemAsync(obj).ConfigureAwait(false));
+			return Accepted(
+				await _queuedBackgroundService.PostWorkItemAsync(obj).ConfigureAwait(false));
 		}
 
 		[HttpGet, Route("computationStatus/{jobId}")]
@@ -42,7 +43,8 @@ namespace ComputationService.Controllers
 		}
 
 		[HttpGet, Route("getAllJobs")]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IReadOnlyDictionary<string, JobModel>))]
+		[ProducesResponseType(StatusCodes.Status200OK,
+			Type = typeof(IReadOnlyDictionary<string, JobModel>))]
 		public async Task<IActionResult> GetAllJobsAsync()
 		{
 			return Ok(await _computationJobStatusService.GetAllJobsAsync().ConfigureAwait(false));
