@@ -27,7 +27,6 @@ namespace ComputationService.Services.Data
 
 		public async Task WriteAsync(string databaseKey, JobModel job)
 		{
-			job.LastUpdate = DateTime.UtcNow;
 			var data = await Task.Run(() =>
 				JsonConvert.SerializeObject(job, Formatting.None)).ConfigureAwait(false);
 			await _redis.HashSetAsync(databaseKey, job.JobId, data).ConfigureAwait(false);
